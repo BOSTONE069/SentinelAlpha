@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sentinelalpha-api"
+version = "0.1.0"
+description = "Explainable Alpaca options hedging and supervisory control plane"
+requires-python = ">=3.11"
+dependencies = [
+  "alembic>=1.13,<2",
+  "fastapi>=0.115",
+  "httpx>=0.27",
+  "openai>=2.0,<3",
+  "psycopg[binary]>=3.2",
+  "pydantic>=2.8",
+  "python-dotenv>=1.0",
+  "redis>=5,<9",
+  "sqlalchemy>=2.0",
+  "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+alpaca = ["alpaca-py>=0.42"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

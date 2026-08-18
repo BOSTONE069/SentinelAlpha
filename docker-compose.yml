@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: sentinelalpha
+      POSTGRES_USER: sentinelalpha
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sentinelalpha-dev}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinelalpha -d sentinelalpha"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - sentinelalpha-postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    volumes:
+      - sentinelalpha-redis:/data
+
+  api:
+    build: ./apps/api
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql+psycopg://sentinelalpha:${POSTGRES_PASSWORD:-sentinelalpha-dev}@postgres:5432/sentinelalpha
+      REDIS_URL: redis://redis:6379/0
+      REDIS_REQUIRED: "true"
+      RUN_MIGRATIONS_ON_STARTUP: "true"
+      WEB_ORIGIN: http://localhost:3000
+      ALPACA_PAPER: "true"
+      ALPACA_TRADING_API_URL: https://paper-api.alpaca.markets/v2
+      LIVE_TRADING_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  web:
+    build: ./apps/web
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+
+volumes:
+  sentinelalpha-postgres:
+  sentinelalpha-redis:
