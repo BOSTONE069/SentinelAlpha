@@ -115,6 +115,17 @@ Redis also caches reconstructed workflows and short-lived Alpaca market, news,
 clock, and account reads; the deterministic freshness check still rejects stale
 market inputs.
 
+### Deploy the complete demo on Render
+
+The root [`render.yaml`](render.yaml) provisions the Next.js dashboard, FastAPI
+API with the Alpaca CLI, PostgreSQL, and Redis-compatible Key Value service on
+Render's free demo plans. Follow the complete setup and verification checklist
+in [`docs/deployment-render.md`](docs/deployment-render.md).
+
+The free PostgreSQL instance expires after 30 days and free services can sleep;
+this configuration is intended for a hackathon demonstration rather than a
+long-lived production trading system.
+
 ### API authentication and authorization
 
 `API_AUTH_ROLE` accepts `viewer`, `operator`, or `admin`. Viewers may inspect

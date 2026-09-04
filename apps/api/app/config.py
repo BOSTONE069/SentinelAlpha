@@ -44,6 +44,13 @@ def _database_url() -> str:
     if value.startswith(prefix):
         database_path = Path(__file__).resolve().parents[1] / value.removeprefix(prefix)
         return f"sqlite:///{database_path}"
+    # Render and several other managed PostgreSQL providers expose a generic
+    # connection string. Select psycopg 3 explicitly because that is the
+    # PostgreSQL driver installed by this application.
+    if value.startswith("postgresql://"):
+        return value.replace("postgresql://", "postgresql+psycopg://", 1)
+    if value.startswith("postgres://"):
+        return value.replace("postgres://", "postgresql+psycopg://", 1)
     return value
 
 

@@ -1,7 +1,9 @@
 import { demoAccount, demoAlerts, demoOrders, demoPolicies, demoRuns, makeDemoHedgeRun, makeDemoRun } from "./demo";
 import type { Account, Order, RiskPolicy, SocAlert, Workflow } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+const explicitApiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+const apiOrigin = process.env.NEXT_PUBLIC_API_ORIGIN?.replace(/\/$/, "");
+const API_URL = explicitApiUrl ?? (apiOrigin ? `${apiOrigin}/api/v1` : "http://localhost:8000/api/v1");
 const TOKEN_KEY = "sentinelalpha.api-auth-token";
 
 export type AuthenticatedActor = {

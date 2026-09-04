@@ -24,6 +24,17 @@ def test_relative_sqlite_database_is_resolved_against_api_root(monkeypatch):
     assert _database_url().endswith("/apps/api/sentinelalpha.db")
 
 
+@pytest.mark.parametrize("scheme", ["postgresql", "postgres"])
+def test_managed_postgres_url_selects_installed_psycopg_driver(monkeypatch, scheme):
+    monkeypatch.setenv(
+        "DATABASE_URL",
+        f"{scheme}://sentinel:secret@postgres.internal:5432/sentinelalpha",
+    )
+    assert _database_url() == (
+        "postgresql+psycopg://sentinel:secret@postgres.internal:5432/sentinelalpha"
+    )
+
+
 def test_alpaca_data_feed_rejects_unknown_value(monkeypatch):
     monkeypatch.setenv("ALPACA_DATA_FEED", "free")
     with pytest.raises(ValueError, match="ALPACA_DATA_FEED must be one of"):

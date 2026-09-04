@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import logoMark from "@/public/brand/sentinelalpha-mark.png";
 import { Icon, type IconName } from "./icons";
 
 const navigation: Array<{ href: string; label: string; icon: IconName }> = [
@@ -23,7 +25,7 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <Link href="/" className="brand" aria-label="SentinelAlpha home">
-        <span className="brand-mark"><span /></span>
+        <span className="brand-mark" aria-hidden="true"><Image src={logoMark} alt="" width={34} height={34} priority /></span>
         <span><strong>Sentinel</strong>Alpha</span>
       </Link>
       <div className="sidebar-label">Control plane</div>
@@ -66,7 +68,10 @@ export function Topbar() {
   }, []);
   return (
     <header className="topbar">
-      <div className="environment"><span className="status-dot positive" />PAPER ENVIRONMENT<span className="separator" /><span className="market-state">MARKET OPEN</span></div>
+      <div className="topbar-left">
+        <Link href="/" className="mobile-brand" aria-label="SentinelAlpha home"><span className="brand-mark" aria-hidden="true"><Image src={logoMark} alt="" width={28} height={28} priority /></span><span><strong>Sentinel</strong>Alpha</span></Link>
+        <div className="environment"><span className="status-dot positive" />PAPER ENVIRONMENT<span className="separator" /><span className="market-state">MARKET OPEN</span></div>
+      </div>
       <div className="top-actions">
         <span className={`api-state ${authenticated ? "online" : "demo"}`}><span />{authenticated ? "AUTHENTICATED" : "AUTH REQUIRED"}</span>
         <button className="icon-button" aria-label="Search"><Icon name="search" /></button>
