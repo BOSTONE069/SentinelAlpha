@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import sessionmaker
 
+from app import db as db_module
 from app.config import get_settings
 from app.coordination import ConcurrentWorkflowError, CoordinationBackend
 from app.db import (
@@ -90,3 +91,44 @@ def test_risk_policy_updates_are_persisted():
         assert session.scalar(select(func.count(RiskPolicyRecord.id))) == len(
             controls.policies()
         ) + 1
+
+
+def test_postgres_migrations_use_an_owned_transaction_and_transaction_lock(
+    monkeypatch,
+):
+    events: list[str] = []
+
+    class FakeConnection:
+        dialect = type("Dialect", (), {"name": "postgresql"})()
+
+        def execute(self, statement, parameters):
+            events.append("lock")
+            assert str(statement) == "SELECT pg_advisory_xact_lock(:key)"
+            assert parameters == {"key": 7_309_861_047_251}
+
+    connection = FakeConnection()
+
+    class Transaction:
+        def __enter__(self):
+            events.append("begin")
+            return connection
+
+        def __exit__(self, exc_type, exc, traceback):
+            events.append("commit" if exc_type is None else "rollback")
+            return False
+
+    class FakeEngine:
+        def begin(self):
+            return Transaction()
+
+    def upgrade(config, revision):
+        assert config.attributes["connection"] is connection
+        assert revision == "head"
+        events.append("upgrade")
+
+    monkeypatch.setattr(db_module, "engine", FakeEngine())
+    monkeypatch.setattr("alembic.command.upgrade", upgrade)
+
+    db_module.run_migrations()
+
+    assert events == ["begin", "lock", "upgrade", "commit"]

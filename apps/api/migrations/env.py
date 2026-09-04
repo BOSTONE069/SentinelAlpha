@@ -14,7 +14,9 @@ config.set_main_option(
     "sqlalchemy.url", get_settings().database_url.replace("%", "%%")
 )
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # Preserve Uvicorn's loggers so a lifespan failure remains visible in
+    # managed-hosting logs instead of surfacing only as exit status 3.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 

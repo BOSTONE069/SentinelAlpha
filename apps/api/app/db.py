@@ -464,21 +464,23 @@ def run_migrations() -> None:
     config = Config(str(api_root / "alembic.ini"))
     config.set_main_option("script_location", str(api_root / "migrations"))
     config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))
-    with engine.connect() as connection:
+    # Own the transaction outside Alembic so PostgreSQL DDL and the
+    # ``alembic_version`` update are committed together when this block exits.
+    #
+    # A session-level ``pg_advisory_lock`` query starts an implicit SQLAlchemy
+    # transaction. Alembic then treats that transaction as externally owned,
+    # and closing a plain ``engine.connect()`` connection rolls every migration
+    # back. A transaction-scoped lock avoids that failure mode and is released
+    # automatically on commit or rollback.
+    with engine.begin() as connection:
         config.attributes["connection"] = connection
         migration_lock_key = 7_309_861_047_251
         if connection.dialect.name == "postgresql":
             connection.execute(
-                text("SELECT pg_advisory_lock(:key)"), {"key": migration_lock_key}
+                text("SELECT pg_advisory_xact_lock(:key)"),
+                {"key": migration_lock_key},
             )
-        try:
-            command.upgrade(config, "head")
-        finally:
-            if connection.dialect.name == "postgresql":
-                connection.execute(
-                    text("SELECT pg_advisory_unlock(:key)"),
-                    {"key": migration_lock_key},
-                )
+        command.upgrade(config, "head")
 
 
 def init_db() -> None:
