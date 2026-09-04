@@ -57,6 +57,22 @@ The health response should report `status: "healthy"`,
 If the frontend was built before the API URL was available, select **Manual
 Deploy > Clear build cache & deploy** on `sentinelalpha-web`.
 
+## Troubleshoot a missing Dockerfile
+
+Use **New > Blueprint**, not **New > Web Service**, to create the stack. If an
+existing manually created service reports `open Dockerfile: no such file or
+directory`, update **Settings > Build & Deploy** with these values:
+
+| Service | Root Directory | Dockerfile Path | Docker Build Context |
+| --- | --- | --- | --- |
+| `sentinelalpha-api` | *(blank)* | `./apps/api/Dockerfile` | `./apps/api` |
+| `sentinelalpha-web` | *(blank)* | `./apps/web/Dockerfile` | `./apps/web` |
+
+Save the settings and select **Manual Deploy > Clear build cache & deploy**. A
+service created manually does not automatically import the settings from
+`render.yaml`. You can instead delete only that failed service and recreate the
+complete stack through **New > Blueprint**.
+
 ## Free-tier boundaries
 
 - Free web services sleep after inactivity, so the first request can be slow.

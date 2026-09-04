@@ -7,9 +7,8 @@ services:
     runtime: docker
     plan: free
     region: frankfurt
-    rootDir: apps/api
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: ./apps/api
     healthCheckPath: /api/v1/health
     autoDeployTrigger: commit
     envVars:
@@ -71,9 +70,8 @@ services:
     runtime: docker
     plan: free
     region: frankfurt
-    rootDir: apps/web
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    dockerfilePath: ./apps/web/Dockerfile
+    dockerContext: ./apps/web
     healthCheckPath: /
     autoDeployTrigger: commit
     envVars:
