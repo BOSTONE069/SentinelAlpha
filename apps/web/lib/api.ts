@@ -3,7 +3,9 @@ import type { Account, Order, RiskPolicy, SocAlert, Workflow } from "./types";
 
 const explicitApiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 const apiOrigin = process.env.NEXT_PUBLIC_API_ORIGIN?.replace(/\/$/, "");
-const API_URL = explicitApiUrl ?? (apiOrigin ? `${apiOrigin}/api/v1` : "http://localhost:8000/api/v1");
+// Docker build arguments that are declared but unset become empty strings.
+// Treat an empty explicit URL as absent so the Render API origin still wins.
+const API_URL = explicitApiUrl || (apiOrigin ? `${apiOrigin}/api/v1` : "http://localhost:8000/api/v1");
 const TOKEN_KEY = "sentinelalpha.api-auth-token";
 
 export type AuthenticatedActor = {
